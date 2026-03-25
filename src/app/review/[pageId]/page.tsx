@@ -10,7 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
-  ArrowLeft, RefreshCw, CheckCircle2, Loader2, AlertCircle,
+  ArrowLeft, XCircle, CheckCircle2, Loader2, AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -18,12 +18,13 @@ import { toast } from "sonner";
 // Constants
 // ---------------------------------------------------------------------------
 
-const STATUS_BADGE: Record<PageStatus, string> = {
-  nieuw: "bg-[#F3F4F6] text-[#6B7280]",
-  in_progress: "bg-[#FFFBEB] text-[#D97706]",
-  review: "bg-[#EFF6FF] text-[#2563EB]",
-  needs_review: "bg-[#FEF2F2] text-[#DC2626]",
-  done: "bg-[#ECFDF5] text-[#059669]",
+const STATUS_BADGE: Record<PageStatus, { cls: string; label: string }> = {
+  new: { cls: "bg-[#F3F4F6] text-[#6B7280] border border-[#E5E7EB]", label: "New" },
+  in_progress: { cls: "bg-[#FFFBEB] text-[#B45309] border border-[#FDE68A]", label: "In Progress" },
+  review: { cls: "bg-[#DBEAFE] text-[#1D4ED8] border border-[#93C5FD]", label: "Review" },
+  approved: { cls: "bg-[#D1FAE5] text-[#047857] border border-[#6EE7B7]", label: "Approved" },
+  rejected: { cls: "bg-[#FEE2E2] text-[#B91C1C] border border-[#FCA5A5]", label: "Rejected" },
+  failed: { cls: "bg-[#FEE2E2] text-[#7F1D1D] border border-[#FCA5A5]", label: "Failed" },
 };
 
 const SCORE_LABELS: Record<string, string> = {
@@ -51,7 +52,7 @@ function scoreBarClass(s: number) {
 }
 
 function priorityLabel(p: number) {
-  return p === 1 ? "Hoog" : p === 2 ? "Midden" : "Laag";
+  return p === 1 ? "High" : p === 2 ? "Medium" : "Low";
 }
 
 function lookupClient(id: string, clients: Client[]) {
@@ -156,32 +157,29 @@ export default function ReviewPage({
     setIsApproving(true);
     try {
       await api.approveArticle(pageId);
-      setStatus("done");
+      setStatus("approved");
       setApproved(true);
-      toast.success("Article approved — status set to done.");
+      toast.success("Article approved — status set to approved.");
     } catch {
       console.log("[Mock mode] Approved page:", pageId);
-      setStatus("done");
+      setStatus("approved");
       setApproved(true);
-      toast.success("Article approved — status set to done. (mock)");
+      toast.success("Article approved — status set to approved. (mock)");
     } finally {
       setIsApproving(false);
     }
   }
 
-  async function handleRegenerate() {
+  async function handleReject() {
     setIsRegenerating(true);
     try {
-      await api.regenerateArticle(pageId);
-      toast.success("Regeneration queued — article will update shortly.");
-      await new Promise((r) => setTimeout(r, 3000));
-      const result = await api.getPageWithArticle(pageId);
-      if (result.article) setArticle(result.article);
-      setStatus(result.page.status);
+      await api.rejectArticle(pageId);
+      setStatus("rejected");
+      toast.success("Article rejected — form can be re-run.");
     } catch {
-      console.log("[Mock mode] Regenerate page:", pageId);
-      await new Promise((r) => setTimeout(r, 3000));
-      toast.success("Article regenerated successfully. (mock)");
+      console.log("[Mock mode] Rejected page:", pageId);
+      setStatus("rejected");
+      toast.success("Article rejected — form can be re-run. (mock)");
     } finally {
       setIsRegenerating(false);
     }
@@ -243,8 +241,8 @@ export default function ReviewPage({
         <h1 className="text-xl font-semibold tracking-tight text-[#0F0F0F]">
           {page.target_keyword}
         </h1>
-        <span className={`mt-0.5 inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5 text-[10px] font-medium ${STATUS_BADGE[status] ?? STATUS_BADGE.review}`}>
-          {status}
+        <span className={`mt-1 inline-flex shrink-0 items-center rounded-md px-3 py-1 text-xs font-semibold ${(STATUS_BADGE[status] ?? STATUS_BADGE.review).cls}`}>
+          {(STATUS_BADGE[status] ?? STATUS_BADGE.review).label}
         </span>
       </div>
 
@@ -345,14 +343,16 @@ export default function ReviewPage({
           <div className="flex gap-3">
             <Button
               variant="outline"
-              className="flex-1 h-10 rounded-lg border-[#E5E7EB] text-[13px] font-medium text-[#6B7280] hover:text-[#0F0F0F] hover:bg-[#F9FAFB]"
-              onClick={handleRegenerate}
-              disabled={isRegenerating || isApproving || approved}
+              className="flex-1 h-10 rounded-lg border-[#DC2626]/30 text-[13px] font-medium text-[#DC2626] hover:bg-[#FEF2F2] hover:border-[#DC2626]/50"
+              onClick={handleReject}
+              disabled={isRegenerating || isApproving || approved || status === "rejected"}
             >
               {isRegenerating ? (
-                <><Loader2 className="size-4 animate-spin" />Regenerating\u2026</>
+                <><Loader2 className="size-4 animate-spin" />Rejecting&hellip;</>
+              ) : status === "rejected" ? (
+                <><XCircle className="size-4" />Rejected</>
               ) : (
-                <><RefreshCw className="size-4" />Regenerate</>
+                <><XCircle className="size-4" />Reject</>
               )}
             </Button>
 

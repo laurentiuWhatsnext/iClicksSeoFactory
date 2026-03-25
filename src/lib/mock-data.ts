@@ -5,53 +5,53 @@
 export const MOCK_CLIENTS = [
   {
     id: "C001", name: "Stile Floors", slug: "stile-floors",
-    domain: "https://stilefloors.nl/", branche: "Vloerenretail",
-    tone_of_voice: "modern, professioneel, warm", notes: "",
-    business_model: "B2C", market_model: "Nationaal",
-    cta_preferences: "Bekijk collectie, Vraag offerte aan",
+    domain: "https://stilefloors.nl/", branche: "Flooring retail",
+    tone_of_voice: "modern, professional, warm", notes: "",
+    business_model: "B2C", market_model: "National",
+    cta_preferences: "View collection, Request a quote",
   },
   {
     id: "C002", name: "Schadeautos.nl", slug: "schadeautos-nl",
     domain: "https://schadeautos.nl/", branche: "Automotive",
-    tone_of_voice: "direct, betrouwbaar, zakelijk",
-    notes: "Vermijd termen als 'total loss' of 'wrak'",
-    business_model: "B2C", market_model: "Nationaal",
-    cta_preferences: "Bekijk aanbod, Neem contact op",
+    tone_of_voice: "direct, trustworthy, business-like",
+    notes: "Avoid terms like 'total loss' or 'wreck'",
+    business_model: "B2C", market_model: "National",
+    cta_preferences: "View inventory, Contact us",
   },
   {
     id: "C003", name: "King Laminaat", slug: "king-laminaat",
-    domain: "https://kinglaminaat.nl/", branche: "Vloerenretail",
-    tone_of_voice: "laagdrempelig, overtuigend, uitnodigend, inspiratievol",
-    notes: "Niet \"showroom\" \u00b7 \"Vloerenwinkel\" voor Delft/Dordrecht/Rotterdam \u00b7 \"Woonwinkel\" voor Uden/Zoetermeer/Antwerpen \u00b7 Geen \"Zo...\"-conclusies",
-    business_model: "B2C", market_model: "Regionaal",
-    cta_preferences: "Kom langs in de winkel, Bestel gratis stalen",
+    domain: "https://kinglaminaat.nl/", branche: "Flooring retail",
+    tone_of_voice: "approachable, persuasive, inviting, inspirational",
+    notes: "Not 'showroom' \u00b7 'Flooring store' for Delft/Dordrecht/Rotterdam \u00b7 'Home store' for Uden/Zoetermeer/Antwerp \u00b7 No 'So...'-style conclusions",
+    business_model: "B2C", market_model: "Regional",
+    cta_preferences: "Visit us in store, Order free samples",
   },
   {
     id: "C004", name: "Haarkliniek De Kroon", slug: "haarkliniek-de-kroon",
-    domain: "https://haarkliniekdekroon.nl/", branche: "Gezondheidszorg",
-    tone_of_voice: "empathisch, deskundig, geruststellend",
-    notes: "Gebruik 'behandeling' i.p.v. 'ingreep'",
-    business_model: "B2C", market_model: "Regionaal",
-    cta_preferences: "Plan een gratis consult",
+    domain: "https://haarkliniekdekroon.nl/", branche: "Healthcare",
+    tone_of_voice: "empathetic, expert, reassuring",
+    notes: "Use 'treatment' instead of 'procedure'",
+    business_model: "B2C", market_model: "Regional",
+    cta_preferences: "Schedule a free consultation",
   },
 ];
 
 export const MOCK_CONTENT_TYPES = [
-  { id: "CT01", slug: "seo_dienstenpagina_b2b", label: "Service page (B2B)", lower_bound: 800, upper_bound: 1000, writing_perspective: "Eerste persoon meervoud (wij/ons)", also_asked_handling: "Verwerk als H2/H3-secties waar relevant" },
-  { id: "CT02", slug: "seo_ecommerce_categorie", label: "E-commerce category", lower_bound: 800, upper_bound: 1200, writing_perspective: "Eerste persoon meervoud (wij/ons)", also_asked_handling: "Verwerk als H2/H3-secties waar relevant" },
-  { id: "CT03", slug: "seo_dienstenpagina_b2c", label: "Service page (B2C)", lower_bound: 1000, upper_bound: 1250, writing_perspective: "Eerste persoon meervoud (wij/ons)", also_asked_handling: "Verwerk als H2/H3-secties waar relevant" },
-  { id: "CT04", slug: "seo_blogpost_klant", label: "Blog article", lower_bound: 1200, upper_bound: 1500, writing_perspective: "Tweede persoon (je/jij/u)", also_asked_handling: "Gebruik als FAQ-sectie onderaan" },
-  { id: "CT05", slug: "seo_locatiepagina", label: "Location page", lower_bound: 800, upper_bound: 1000, writing_perspective: "Eerste persoon meervoud (wij/ons)", also_asked_handling: "Verwerk als H2/H3-secties waar relevant" },
-  { id: "CT06", slug: "seo_productpagina", label: "Product page", lower_bound: 600, upper_bound: 900, writing_perspective: "Eerste persoon meervoud (wij/ons)", also_asked_handling: "Verwerk als FAQ-sectie" },
-  { id: "CT07", slug: "seo_faq_pagina", label: "FAQ page", lower_bound: 800, upper_bound: 1200, writing_perspective: "Tweede persoon (je/jij/u)", also_asked_handling: "Verwerk als extra vragen" },
-  { id: "CT08", slug: "seo_over_ons", label: "About page", lower_bound: 600, upper_bound: 900, writing_perspective: "Eerste persoon meervoud (wij/ons)", also_asked_handling: "Niet van toepassing" },
+  { id: "CT01", slug: "seo_dienstenpagina_b2b", label: "Service page (B2B)", lower_bound: 800, upper_bound: 1000, writing_perspective: "First person plural (we/our)", also_asked_handling: "Integrate as H2/H3 sections where relevant" },
+  { id: "CT02", slug: "seo_ecommerce_categorie", label: "E-commerce category", lower_bound: 800, upper_bound: 1200, writing_perspective: "First person plural (we/our)", also_asked_handling: "Integrate as H2/H3 sections where relevant" },
+  { id: "CT03", slug: "seo_dienstenpagina_b2c", label: "Service page (B2C)", lower_bound: 1000, upper_bound: 1250, writing_perspective: "First person plural (we/our)", also_asked_handling: "Integrate as H2/H3 sections where relevant" },
+  { id: "CT04", slug: "seo_blogpost_klant", label: "Blog article", lower_bound: 1200, upper_bound: 1500, writing_perspective: "Second person (you/your)", also_asked_handling: "Use as FAQ section at the bottom" },
+  { id: "CT05", slug: "seo_locatiepagina", label: "Location page", lower_bound: 800, upper_bound: 1000, writing_perspective: "First person plural (we/our)", also_asked_handling: "Integrate as H2/H3 sections where relevant" },
+  { id: "CT06", slug: "seo_productpagina", label: "Product page", lower_bound: 600, upper_bound: 900, writing_perspective: "First person plural (we/our)", also_asked_handling: "Integrate as FAQ section" },
+  { id: "CT07", slug: "seo_faq_pagina", label: "FAQ page", lower_bound: 800, upper_bound: 1200, writing_perspective: "Second person (you/your)", also_asked_handling: "Integrate as additional questions" },
+  { id: "CT08", slug: "seo_over_ons", label: "About page", lower_bound: 600, upper_bound: 900, writing_perspective: "First person plural (we/our)", also_asked_handling: "Not applicable" },
 ];
 
 export const MOCK_PAGES = [
-  { id: "P001", client_id: "C003", content_type_id: "CT05", target_keyword: "laminaat amsterdam", secondary_keywords: ["laminaat kopen amsterdam", "goedkoop laminaat amsterdam"], target_url: "/amsterdam", priority: 1, status: "nieuw" },
+  { id: "P001", client_id: "C003", content_type_id: "CT05", target_keyword: "laminaat amsterdam", secondary_keywords: ["laminaat kopen amsterdam", "goedkoop laminaat amsterdam"], target_url: "/amsterdam", priority: 1, status: "new" },
   { id: "P002", client_id: "C003", content_type_id: "CT05", target_keyword: "laminaat rotterdam", secondary_keywords: ["laminaat rotterdam centrum"], target_url: "/rotterdam", priority: 2, status: "in_progress" },
   { id: "P003", client_id: "C003", content_type_id: "CT01", target_keyword: "laminaat leggen service", secondary_keywords: ["laminaat installatie"], target_url: "/diensten/laminaat-leggen", priority: 1, status: "review" },
-  { id: "P004", client_id: "C001", content_type_id: "CT04", target_keyword: "vinyl vloer voordelen", secondary_keywords: [], target_url: "/blog/vinyl-vloer", priority: 3, status: "done" },
+  { id: "P004", client_id: "C001", content_type_id: "CT04", target_keyword: "vinyl vloer voordelen", secondary_keywords: [], target_url: "/blog/vinyl-vloer", priority: 3, status: "approved" },
 ];
 
 export const MOCK_ARTICLE = {
@@ -66,7 +66,7 @@ export const MOCK_ARTICLE = {
 
 export const MOCK_STATS = {
   total_pages: 4,
-  by_status: { nieuw: 1, in_progress: 1, review: 1, done: 1 },
+  by_status: { new: 1, in_progress: 1, review: 1, approved: 1 },
   by_client: { C001: 1, C003: 3 },
   avg_cost: 0.14,
   avg_generation_time: 48,

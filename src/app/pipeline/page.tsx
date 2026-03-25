@@ -24,25 +24,28 @@ import { toast } from "sonner";
 
 const STATUS_OPTIONS = [
   { value: "all", label: "All statuses" },
-  { value: "nieuw", label: "Nieuw" },
+  { value: "new", label: "New" },
   { value: "in_progress", label: "In progress" },
   { value: "review", label: "Review" },
-  { value: "done", label: "Done" },
+  { value: "approved", label: "Approved" },
+  { value: "rejected", label: "Rejected" },
+  { value: "failed", label: "Failed" },
 ];
 
 const PRIORITY_OPTIONS = [
   { value: "all", label: "All priorities" },
-  { value: "1", label: "1 — Hoog" },
-  { value: "2", label: "2 — Midden" },
-  { value: "3", label: "3 — Laag" },
+  { value: "1", label: "1 — High" },
+  { value: "2", label: "2 — Medium" },
+  { value: "3", label: "3 — Low" },
 ];
 
-const STATUS_BADGE: Record<PageStatus, string> = {
-  nieuw: "bg-[#F3F4F6] text-[#6B7280]",
-  in_progress: "bg-[#FFFBEB] text-[#D97706]",
-  review: "bg-[#EFF6FF] text-[#2563EB]",
-  needs_review: "bg-[#FEF2F2] text-[#DC2626]",
-  done: "bg-[#ECFDF5] text-[#059669]",
+const STATUS_BADGE: Record<PageStatus, { cls: string; label: string }> = {
+  new: { cls: "bg-[#F3F4F6] text-[#6B7280]", label: "New" },
+  in_progress: { cls: "bg-[#FFFBEB] text-[#D97706]", label: "In Progress" },
+  review: { cls: "bg-[#EFF6FF] text-[#2563EB]", label: "Review" },
+  approved: { cls: "bg-[#ECFDF5] text-[#059669]", label: "Approved" },
+  rejected: { cls: "bg-[#FEF2F2] text-[#DC2626]", label: "Rejected" },
+  failed: { cls: "bg-[#FEF2F2] text-[#991B1B]", label: "Failed" },
 };
 
 const PRIORITY_BADGE: Record<number, string> = {
@@ -225,7 +228,7 @@ export default function PipelinePage() {
               return next;
             });
             if (stage === STAGES.length - 1) {
-              setPages((prev) => prev.map((p) => p.id === id ? { ...p, status: "review" as PageStatus } : p));
+              setPages((prev) => prev.map((p) => p.id === id ? { ...p, status: "review" as const } : p));
             }
           }, delay);
           timersRef.current.push(timer);
@@ -277,9 +280,9 @@ export default function PipelinePage() {
       {/* Stats row */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <StatCard label="Total pages" value={totalPages} loading={isLoading} />
-        <StatCard label="Done" value={byStatus.done ?? 0} accent="text-[#059669]" loading={isLoading} />
+        <StatCard label="Approved" value={byStatus.approved ?? 0} accent="text-[#059669]" loading={isLoading} />
         <StatCard label="In progress" value={byStatus.in_progress ?? 0} accent="text-[#D97706]" loading={isLoading} />
-        <StatCard label="Queued" value={byStatus.nieuw ?? 0} loading={isLoading} />
+        <StatCard label="Queued" value={(byStatus.new ?? 0) + (byStatus.failed ?? 0)} loading={isLoading} />
       </div>
 
       {/* Filters + actions */}
@@ -417,16 +420,16 @@ export default function PipelinePage() {
                       </TableCell>
                       <TableCell>
                         <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${PRIORITY_BADGE[page.priority] ?? PRIORITY_BADGE[3]}`}>
-                          {page.priority === 1 ? "Hoog" : page.priority === 2 ? "Midden" : "Laag"}
+                          {page.priority === 1 ? "High" : page.priority === 2 ? "Medium" : "Low"}
                         </span>
                       </TableCell>
                       <TableCell>
-                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${STATUS_BADGE[page.status] ?? STATUS_BADGE.nieuw}`}>
-                          {page.status}
+                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${(STATUS_BADGE[page.status] ?? STATUS_BADGE.new).cls}`}>
+                          {(STATUS_BADGE[page.status] ?? STATUS_BADGE.new).label}
                         </span>
                       </TableCell>
                       <TableCell className="text-right">
-                        {(page.status === "review" || page.status === "done") && (
+                        {(page.status === "review" || page.status === "approved") && (
                           <Link
                             href={`/review/${page.id}`}
                             className="inline-flex items-center gap-1 text-[12px] font-medium text-[#534AB7] hover:underline transition-colors"
