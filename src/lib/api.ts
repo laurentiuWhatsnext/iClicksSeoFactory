@@ -11,12 +11,14 @@ const BASE =
 // Shared types  (mirror the Supabase data model exactly)
 // ---------------------------------------------------------------------------
 
+// Mihai's status flow: new → in_progress → review → approved / rejected | failed
 export type PageStatus =
-  | "nieuw"
+  | "new"
   | "in_progress"
   | "review"
-  | "needs_review"
-  | "done";
+  | "approved"
+  | "rejected"
+  | "failed";
 
 export interface Client {
   id: string;
@@ -129,12 +131,38 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 // ---------------------------------------------------------------------------
-// 1. Clients — GET /api/clients
+// 1. Clients — GET /get_clients
+// Response: { clients: [...] }
 // ---------------------------------------------------------------------------
 
 export async function getClients(): Promise<Client[]> {
-  const data = await apiFetch<{ clients: Client[] }>("/api/clients");
+  const data = await apiFetch<{ clients: Client[] }>("/get_clients");
   return data.clients;
+}
+
+// ---------------------------------------------------------------------------
+// 1b. Create client — POST /add_client
+// ---------------------------------------------------------------------------
+
+export interface CreateClientBody {
+  name: string;
+  slug: string;
+  domain?: string;
+  branche?: string;
+  tone_of_voice?: string;
+  notes?: string;
+  business_model?: string;
+  market_model?: string;
+  cta_preferences?: string;
+}
+
+export async function createClient(
+  body: CreateClientBody
+): Promise<Client> {
+  return apiFetch<Client>("/add_client", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -149,7 +177,8 @@ export async function getContentTypes(): Promise<ContentType[]> {
 }
 
 // ---------------------------------------------------------------------------
-// 3a. Create page — POST /api/pages (single page)
+// 3. Create/save form — POST /add_form
+// Single endpoint: run=false saves as "new", run=true saves AND queues generation
 // ---------------------------------------------------------------------------
 
 export interface CreatePageBody {
@@ -161,7 +190,7 @@ export interface CreatePageBody {
   target_url?: string;
   page_goal?: string;
   priority?: string;
-  instructions?: string;
+  instructions?: string;      // passed VERBATIM to writer agent
   internal_links?: string;
   reference_url?: string;
   meta_title?: string;
@@ -171,32 +200,21 @@ export interface CreatePageBody {
   serp_notes?: string;
   page_cta?: string;
   target_word_count?: number;
+  run?: boolean;              // true = save + immediately queue for generation
 }
 
 export async function createPage(
   body: CreatePageBody
 ): Promise<{ id: string; status: string; created_at: string }> {
   return apiFetch<{ id: string; status: string; created_at: string }>(
-    "/api/pages",
+    "/add_form",
     { method: "POST", body: JSON.stringify(body) }
   );
 }
 
 // ---------------------------------------------------------------------------
-// 3b. Generate single page — POST /api/pages/:id/generate
-// ---------------------------------------------------------------------------
-
-export async function generatePage(
-  pageId: string
-): Promise<{ page_id: string; status: string; message: string }> {
-  return apiFetch<{ page_id: string; status: string; message: string }>(
-    `/api/pages/${pageId}/generate`,
-    { method: "POST", body: JSON.stringify({}) }
-  );
-}
-
-// ---------------------------------------------------------------------------
-// 4. Pages — GET /api/pages (with optional filters)
+// 4. Get all forms — GET /get_forms
+// Also used with ?form_id=X to get a single form (Screen 3)
 // ---------------------------------------------------------------------------
 
 export interface GetPagesParams {
@@ -215,15 +233,27 @@ export async function getPages(
   if (params.priority) qs.set("priority", String(params.priority));
 
   const query = qs.toString() ? `?${qs}` : "";
-  return apiFetch<{ pages: Page[]; total: number }>(`/api/pages${query}`);
+  return apiFetch<{ pages: Page[]; total: number }>(`/get_forms${query}`);
 }
 
 // ---------------------------------------------------------------------------
-// 4. Stats — GET /api/stats
+// 4b. Stats — derived from /get_forms (no separate endpoint from Mihai yet)
 // ---------------------------------------------------------------------------
 
 export async function getStats(): Promise<Stats> {
-  return apiFetch<Stats>("/api/stats");
+  // Try dedicated stats endpoint first, fall back to computing from forms
+  try {
+    return await apiFetch<Stats>("/api/stats");
+  } catch {
+    const { pages } = await getPages();
+    const by_status: Record<string, number> = {};
+    const by_client: Record<string, number> = {};
+    for (const p of pages) {
+      by_status[p.status] = (by_status[p.status] ?? 0) + 1;
+      by_client[p.client_id] = (by_client[p.client_id] ?? 0) + 1;
+    }
+    return { total_pages: pages.length, by_status, by_client, avg_cost: 0, avg_generation_time: 0 };
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -259,51 +289,51 @@ export async function importCsv(
 }
 
 // ---------------------------------------------------------------------------
-// 6. Batch generate — POST /api/pages/batch-generate
+// 6. Batch generate — POST /generate_forms
+// Only works on "new" or "failed" forms
 // ---------------------------------------------------------------------------
 
 export async function batchGenerate(
   pageIds: string[]
 ): Promise<BatchGenerateResult> {
-  return apiFetch<BatchGenerateResult>("/api/pages/batch-generate", {
+  return apiFetch<BatchGenerateResult>("/generate_forms", {
     method: "POST",
-    body: JSON.stringify({ page_ids: pageIds }),
+    body: JSON.stringify({ ids: pageIds }),
   });
 }
 
 // ---------------------------------------------------------------------------
-// 7. Get page + article — GET /api/pages/:id
+// 7. Get single form — GET /get_forms?form_id=X
 // ---------------------------------------------------------------------------
 
 export async function getPageWithArticle(
   pageId: string
 ): Promise<{ page: Page; article?: Article }> {
-  return apiFetch<{ page: Page; article?: Article }>(`/api/pages/${pageId}`);
-}
-
-// ---------------------------------------------------------------------------
-// 8. Approve article — POST /api/articles/:pageId/approve
-// ---------------------------------------------------------------------------
-
-export async function approveArticle(
-  pageId: string
-): Promise<{ article: Article }> {
-  return apiFetch<{ article: Article }>(
-    `/api/articles/${pageId}/approve`,
-    { method: "POST" }
+  return apiFetch<{ page: Page; article?: Article }>(
+    `/get_forms?form_id=${encodeURIComponent(pageId)}`
   );
 }
 
 // ---------------------------------------------------------------------------
-// 9. Regenerate article — POST /api/articles/:pageId/regenerate
+// 8. Evaluate (approve/reject) — PATCH /evaluate_form
+// Only works for forms in "review" status
 // ---------------------------------------------------------------------------
 
-export async function regenerateArticle(
+export async function approveArticle(
   pageId: string
-): Promise<{ job_id: string }> {
-  return apiFetch<{ job_id: string }>(
-    `/api/articles/${pageId}/regenerate`,
-    { method: "POST" }
+): Promise<{ form_id: string; status: string }> {
+  return apiFetch<{ form_id: string; status: string }>(
+    "/evaluate_form",
+    { method: "PATCH", body: JSON.stringify({ form_id: pageId, approved: true }) }
+  );
+}
+
+export async function rejectArticle(
+  pageId: string
+): Promise<{ form_id: string; status: string }> {
+  return apiFetch<{ form_id: string; status: string }>(
+    "/evaluate_form",
+    { method: "PATCH", body: JSON.stringify({ form_id: pageId, approved: false }) }
   );
 }
 
